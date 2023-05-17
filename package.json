@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next server/index.js",
     "build": "next build",
-    "start": "next start",
+    "start": "node server/index.js NODE_ENV=production ",
     "lint": "next lint"
   },
   "dependencies": {
@@ -13,13 +13,20 @@
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "autoprefixer": "10.4.14",
+    "axios": "^1.4.0",
+    "canvas": "^2.11.2",
+    "cheerio": "^1.0.0-rc.12",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
     "next": "13.4.1",
+    "node-cron": "^3.0.2",
     "postcss": "8.4.23",
+    "puppeteer": "^20.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "request": "^2.88.2",
     "tailwindcss": "3.3.2",
+    "ts-node": "^10.9.1",
     "typescript": "5.0.4"
   }
 }
