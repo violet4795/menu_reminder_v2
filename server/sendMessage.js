@@ -10,7 +10,6 @@ const data = {
 
 
 function sendDoorayMessage(todayMenu, webHookURL) {
-    data.text = 'test'
     data.attachments = todayMenu
     data.botName = `${Util.getDayOfWeek(new Date())}요일 ${Util.getMealTimeText()} 메뉴`
     axios.post(webHookURL, data, {

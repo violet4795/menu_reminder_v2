@@ -12,10 +12,13 @@ const port = 3000;
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
- 
-// const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514718644643270309/LkaJ0WHmRqCIbixoUsYv1Q'
-const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514751745337936891/B5oGM0RcQOOe-3J-feWCkA'
+
+
+// TODO : 웹 사이트로 받기
+// const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514718644643270309/LkaJ0WHmRqCIbixoUsYv1Q' // 내 개인
+const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514751745337936891/B5oGM0RcQOOe-3J-feWCkA' // 점심원정대
 const repeatCount = 20;
+
 main()
 
 async function main(){
@@ -24,28 +27,18 @@ async function main(){
   // 1. 1분에 한번씩 크롤링을 한다.
   // 2. 크롤링 결과에 이미지가 있을때까지 반복한다.
   // 3. 이미지가 있다면 메세지 보낸다.
-  // startDayCron(() => )
   startCrawlCron((todayMenu) => sendDoorayMessage(todayMenu, weebHookURL))
-
-  // // 월-금 오전 11시 30분에 작업을 실행합니다.
-  // const scheduledJobSendMail = cron.schedule('30 11 * * 1-5', () => {
-  //   const meal = Util.getMealTimeText() // 점심 or 저녁
-  //   const todayMenu = Util.mealFilter(weekMenu, meal)
-  //   const textTodayMenu = Util.menuToText(todayMenu)
-
-  //   sendDoorayMessage(textTodayMenu, weebHookURL)
-  // });
-
-
 }
 
 
 async function repeat(count, callback) {
   const lunchMenuSummary = await crawlFromPayco();
-  console.log(lunchMenuSummary)
-  if(Util.isExistImage(lunchMenuSummary)) { // 이미지가 뜬다면 바로 for문 탈출하고 실행
-
-    console.log('이미지 있다')
+  const isFriday = Util.isFriday()
+  // 이미지 개수가 ... 금요일에는 한개, 그외 요일은 3개
+  // 월화수목 - 3개, 금 - 1개
+  const imageLength = lunchMenuSummary.filter(e => e.imageUrl).length
+  if(isFriday ? imageLength === 1 : imageLength === 3) { // 이미지가 뜬다면 바로 for문 탈출하고 실행
+    console.log(`이미지 ${imageLength}개 있다`)
     callback(lunchMenuSummary)
     return;
   }
@@ -70,15 +63,6 @@ function startCrawlCron(callback) {
   const scheduledJobSendMail = cron.schedule('30 11 * * 1-5', async () => {
     repeat(repeatCount, callback)
   });
-
-  
-
-  // const scheduledJobSendMail = cron.schedule('*/1 11:30-11:59 * * 1-5', async () => {
-  //   let lunchMenuText = await crawlFromPayco();
-  //   let weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514718644643270309/LkaJ0WHmRqCIbixoUsYv1Q'
-  //   callback()
-  // });
-
 }
 
 

@@ -40,4 +40,9 @@ Util.isExistImage = (lunchMenuSummary) => {
     return !(lunchMenuSummary.map(e => e.imageUrl).every(e => e === undefined))
 }
 
+Util.isFriday = () => {
+    const x = new Date()
+    return x.getDay() === 5
+}
+
 module.exports = Util

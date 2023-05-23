@@ -24,9 +24,6 @@ async function crawlFromPayco() {
     // debugger
     const content = await page.content();
     const $ = cheerio.load(content);
-    // const imgTagList = $('div > img')
-    // if (imgTagList.length === 0) return; // 다시시도 하던지
-    // const imgSrcList = Array.from(imgTagList).map(e => e.attribs.src)
 
 
     const lunchMenuList = $('#dataResult > ul > li.timeView_49')
@@ -42,9 +39,11 @@ async function crawlFromPayco() {
     const lunchArr = lunchMenuList.toArray()
     const lunchMenuSummary = lunchArr.map(e => {
         const lunch = $(e)
-        const lunchText = lunch.text().replace(/\s*>\s*/g, '>').replace(/\s*Kcal/g,'Kcal').replace(/\s+/g, ' \n').trim()
+        const lunchTitle = lunch.find('.menu_title').text()
+        const lunchText = lunch.find('.menu_info_box').text().replace(/\s*>\s*/g, '>').replace(/\s*Kcal/g,'Kcal').replace(/\s+/g, ' \n').trim()
         const lunchImage = lunch.find('img').attr('src')
         return {
+            title: lunchTitle,
             text: lunchText,
             imageUrl: lunchImage
         }
