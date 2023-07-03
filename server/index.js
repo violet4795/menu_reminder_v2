@@ -13,57 +13,83 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-
-// TODO : 웹 사이트로 받기
-// const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514718644643270309/LkaJ0WHmRqCIbixoUsYv1Q' // 내 개인
-const weebHookURL = 'https://hook.dooray.com/services/1387695619080878080/3514751745337936891/B5oGM0RcQOOe-3J-feWCkA' // 점심원정대
-const repeatCount = 20;
+const data = [
+  {
+    webHookURL: 'https://hook.dooray.com/services/1387695619080878080/3514751745337936891/B5oGM0RcQOOe-3J-feWCkA', // IOT
+    sendDay: [1, 2, 3, 4, 5]
+  },
+  {
+    webHookURL: 'https://hook.dooray.com/services/3234962584704058721/3553650564846119240/2Jmla0eqRg6D4nhSeXTTiw', // fashiongo
+    sendDay: [1]
+  },
+  // {
+  //   webHookURL: 'https://hook.dooray.com/services/1387695619080878080/3514718644643270309/LkaJ0WHmRqCIbixoUsYv1Q', // 개인
+  //   sendDay: [1]
+  // },
+]
+const repeatCount = 25;
 
 main()
 
 async function main(){
-
-  //브라우저 키고 끄고 하는게 더 낫지않을까??
-  // 1. 1분에 한번씩 크롤링을 한다.
-  // 2. 크롤링 결과에 이미지가 있을때까지 반복한다.
-  // 3. 이미지가 있다면 메세지 보낸다.
-  startCrawlCron((todayMenu) => sendDoorayMessage(todayMenu, weebHookURL))
-}
-
-
-async function repeat(count, callback) {
-  const lunchMenuSummary = await crawlFromPayco();
-  const isFriday = Util.isFriday()
-  // 이미지 개수가 ... 금요일에는 한개, 그외 요일은 3개
-  // 월화수목 - 3개, 금 - 1개
-  const imageLength = lunchMenuSummary.filter(e => e.imageUrl).length
-  if(isFriday ? imageLength === 1 : imageLength === 3) { // 이미지가 뜬다면 바로 for문 탈출하고 실행
-    console.log(`이미지 ${imageLength}개 있다`)
-    callback(lunchMenuSummary)
-    return;
-  }
-  setTimeout(() => repeat(count-1, callback), 60000)
-}
-
-function startCrawlCron(callback) {
-  // 프로세스 종료 시 스케쥴러도 죽도록
-  process.on('SIGINT', () => {
-      console.log('Terminating scheduledJob...');
-      scheduledJobSendMail.stop();
-      process.exit();
-  });
-
-  process.on('SIGTERM', () => {
-      console.log('Terminating scheduledJob...');
-      scheduledJobSendMail.stop();
-      process.exit();
-  });
-
-  // 월-금 오전 11시 30분에 작업을 실행합니다.
-  const scheduledJobSendMail = cron.schedule('30 11 * * 1-5', async () => {
-    repeat(repeatCount, callback)
+  cron.schedule('30 11 * * 1-5', async () => {
+    let lunchMenuSummary = await crawl(repeatCount)
+    sendDoorayMessage(lunchMenuSummary, data)
   });
 }
+
+
+async function crawl(count) {
+  return new Promise(async (resolve) => {
+    let cnt = count;
+    const interval = setInterval(async () => {
+
+      const lunchMenuSummary = await crawlFromPayco();
+      const isFriday = Util.isFriday()
+      // 이미지 개수가 ... 금요일에는 한개, 그외 요일은 3개
+      // 월화수목 - 3개, 금 - 1개
+      const imageLength = lunchMenuSummary.filter(e => e.imageUrl).length
+      if(isFriday ? imageLength === 1 : imageLength === 3) { // 이미지가 뜬다면 바로 for문 탈출하고 실행
+        console.log(`이미지 ${imageLength}개 있다`)
+        resolve(lunchMenuSummary);
+        clearInterval(interval)
+      }
+
+      cnt--;
+
+      if(cnt === 0) {
+        resolve(null)
+        clearInterval(interval)
+      }
+
+    }, 60000)
+  })
+}
+
+// function startCrawlCron(callback) {
+//   // 프로세스 종료 시 스케쥴러도 죽도록
+//   process.on('SIGINT', () => {
+//       console.log('Terminating scheduledJob...');
+//       scheduledJobSendMail.stop();
+//       scheduledFashionGoJobSendMail.stop();
+//       process.exit();
+//   });
+
+//   process.on('SIGTERM', () => {
+//       console.log('Terminating scheduledJob...');
+//       scheduledJobSendMail.stop();
+//       scheduledFashionGoJobSendMail.stop();
+//       process.exit();
+//   });
+
+//   // 월-금 오전 11시 30분에 작업을 실행합니다.
+//   const scheduledJobSendMail = cron.schedule('30 11 * * 1-5', async () => {
+//     repeat(repeatCount, callback)
+//   });
+//   // const scheduledFashionGoJobSendMail = cron.schedule('32 11 * * 1', async () => {
+//   //   repeat(repeatCount, callback)
+//   // });
+// }
 
 
 app.prepare().then(() => {

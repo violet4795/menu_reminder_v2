@@ -41,8 +41,12 @@ Util.isExistImage = (lunchMenuSummary) => {
 }
 
 Util.isFriday = () => {
+    return this.getDay === 5
+}
+
+Util.getDay = () => {
     const x = new Date()
-    return x.getDay() === 5
+    return x.getDay()
 }
 
 module.exports = Util
