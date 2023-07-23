@@ -41,7 +41,7 @@ Util.isExistImage = (lunchMenuSummary) => {
 }
 
 Util.isFriday = () => {
-    return this.getDay() === 5
+    return Util.getDay() === 5
 }
 
 Util.getDay = () => {
